@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="es" data-lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RomVal Studio</title>
+<meta name="description" content="RomVal Studio convierte procesos críticos que viven en hojas de cálculo frágiles en software confiable. Buenos Aires, para toda América Latina.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#F7F8F7;
+    --ink:#14171A;
+    --blueprint:#1D3B63;
+    --amber:#E0A83B;
+    --muted:#5B6670;
+    --hairline:#DADEDD;
+    --display:'Archivo','Helvetica Neue',Helvetica,Arial,sans-serif;
+    --body:'IBM Plex Sans','Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;
+    --mono:'IBM Plex Mono','SF Mono',Consolas,'Liberation Mono',monospace;
+    --spine:76px;
+    --maxw:820px;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  @media (prefers-reduced-motion: reduce){
+    html{scroll-behavior:auto}
+    *,*::before,*::after{animation:none!important;transition:none!important}
+  }
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:var(--body);
+    font-size:17px;
+    line-height:1.65;
+    -webkit-font-smoothing:antialiased;
+  }
+  /* ---------- language toggle ---------- */
+  html[data-lang="es"] [lang="en"]{display:none}
+  html[data-lang="en"] [lang="es"]{display:none}
+
+  a{color:var(--blueprint)}
+  a:focus-visible,button:focus-visible{
+    outline:2px solid var(--amber);
+    outline-offset:3px;
+    border-radius:2px;
+  }
+  ::selection{background:var(--blueprint);color:var(--paper)}
+
+  /* ---------- nav ---------- */
+  header{
+    position:sticky;top:0;z-index:10;
+    background:color-mix(in srgb, var(--paper) 92%, transparent);
+    backdrop-filter:blur(8px);
+    border-bottom:1px solid var(--hairline);
+  }
+  .nav{
+    max-width:calc(var(--maxw) + var(--spine));
+    margin:0 auto;
+    padding:14px 24px;
+    display:flex;align-items:center;gap:20px;
+  }
+  .wordmark{
+    font-family:var(--display);
+    font-weight:700;
+    font-size:19px;
+    letter-spacing:.01em;
+    color:var(--ink);
+    text-decoration:none;
+    display:flex;align-items:baseline;gap:8px;
+  }
+  .wordmark small{
+    font-family:var(--mono);
+    font-weight:400;
+    font-size:11px;
+    color:var(--blueprint);
+    letter-spacing:.12em;
+    text-transform:uppercase;
+  }
+  .nav-links{
+    margin-left:auto;
+    display:flex;align-items:center;gap:22px;
+    font-size:14.5px;
+  }
+  .nav-links a{
+    color:var(--muted);
+    text-decoration:none;
+    padding:4px 0;
+  }
+  .nav-links a:hover{color:var(--blueprint)}
+  .lang-toggle{
+    font-family:var(--mono);
+    font-size:12.5px;
+    border:1px solid var(--hairline);
+    background:transparent;
+    color:var(--muted);
+    border-radius:3px;
+    display:flex;overflow:hidden;
+  }
+  .lang-toggle button{
+    all:unset;
+    padding:5px 10px;
+    cursor:pointer;
+    font:inherit;
+    color:var(--muted);
+  }
+  .lang-toggle button[aria-pressed="true"]{
+    background:var(--blueprint);
+    color:var(--paper);
+  }
+  @media (max-width:760px){
+    .nav{flex-wrap:wrap;row-gap:8px;padding:12px 18px}
+    .nav-links{margin-left:0;width:100%;gap:16px;font-size:13.5px;overflow-x:auto}
+  }
+
+  /* ---------- section frame: cell-reference spine ---------- */
+  main{
+    max-width:calc(var(--maxw) + var(--spine));
+    margin:0 auto;
+    padding:0 24px;
+  }
+  .sec{
+    display:grid;
+    grid-template-columns:var(--spine) 1fr;
+    border-left:1px solid var(--hairline);
+    padding:88px 0 96px;
+    position:relative;
+  }
+  .sec + .sec{border-top:1px solid var(--hairline)}
+  .cellref{
+    font-family:var(--mono);
+    font-size:13px;
+    font-weight:500;
+    color:var(--blueprint);
+    letter-spacing:.05em;
+    padding-left:18px;
+    padding-top:6px;
+  }
+  .cellref::after{
+    content:"";
+    display:block;
+    width:22px;height:1px;
+    background:var(--blueprint);
+    margin-top:8px;
+    opacity:.5;
+  }
+  .sec-body{min-width:0}
+  @media (max-width:760px){
+    main{padding:0 18px}
+    .sec{grid-template-columns:1fr;padding:60px 0 64px;border-left:none}
+    .cellref{padding-left:0;margin-bottom:18px}
+  }
+
+  h1,h2,h3{font-family:var(--display);line-height:1.15;letter-spacing:-.01em}
+  h2{
+    font-size:clamp(24px,3.4vw,31px);
+    font-weight:600;
+    color:var(--ink);
+    margin-bottom:26px;
+    max-width:22ch;
+  }
+  p{max-width:62ch}
+  .muted{color:var(--muted)}
+
+  /* ---------- hero ---------- */
+  .hero{
+    padding:110px 0 120px;
+    background-image:
+      linear-gradient(var(--paper) 0%, transparent 12%, transparent 88%, var(--paper) 100%),
+      linear-gradient(to right, rgba(29,59,99,.055) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(29,59,99,.055) 1px, transparent 1px);
+    background-size:100% 100%, 44px 44px, 44px 44px;
+  }
+  .hero h1{
+    font-size:clamp(32px,5.4vw,52px);
+    font-weight:700;
+    max-width:19ch;
+    margin-bottom:22px;
+  }
+  .hero .sub{
+    font-size:clamp(17px,2vw,19.5px);
+    color:var(--muted);
+    max-width:52ch;
+    margin-bottom:38px;
+  }
+  .btn{
+    display:inline-block;
+    font-family:var(--display);
+    font-weight:600;
+    font-size:15.5px;
+    text-decoration:none;
+    background:var(--amber);
+    color:var(--ink);
+    padding:13px 26px;
+    border-radius:3px;
+    border:1px solid color-mix(in srgb, var(--amber) 70%, var(--ink));
+    transition:transform .12s ease, box-shadow .12s ease;
+  }
+  .btn:hover{transform:translateY(-1px);box-shadow:0 3px 10px rgba(20,23,26,.12)}
+  .btn:active{transform:translateY(0)}
+  .btn-quiet{
+    background:transparent;
+    color:var(--blueprint);
+    border:1px solid var(--hairline);
+    margin-left:12px;
+  }
+  @media (max-width:760px){
+    .hero{padding:70px 0 76px}
+    .btn-quiet{margin-left:0;margin-top:10px}
+  }
+
+  /* ---------- qué hacemos ---------- */
+  .points{
+    display:grid;gap:0;
+    border-top:1px solid var(--hairline);
+  }
+  .point{
+    display:grid;
+    grid-template-columns:200px 1fr;
+    gap:24px;
+    padding:26px 0;
+    border-bottom:1px solid var(--hairline);
+  }
+  .point h3{
+    font-size:17px;font-weight:600;color:var(--blueprint);
+  }
+  .point p{font-size:16px;color:var(--muted)}
+  @media (max-width:680px){
+    .point{grid-template-columns:1fr;gap:6px;padding:20px 0}
+  }
+
+  /* ---------- caso: ledger rows ---------- */
+  .ledger{border-top:1px solid var(--hairline)}
+  .row{
+    display:grid;
+    grid-template-columns:150px 1fr;
+    gap:24px;
+    padding:22px 0;
+    border-bottom:1px solid var(--hairline);
+  }
+  .row dt{
+    font-family:var(--mono);
+    font-size:12.5px;
+    font-weight:500;
+    text-transform:uppercase;
+    letter-spacing:.1em;
+    color:var(--blueprint);
+    padding-top:3px;
+  }
+  .row dd{font-size:16px;color:var(--ink)}
+  .row dd .muted{font-size:15px}
+  .stat{
+    font-family:var(--mono);
+    color:var(--blueprint);
+    font-weight:500;
+    white-space:nowrap;
+  }
+  @media (max-width:680px){
+    .row{grid-template-columns:1fr;gap:5px;padding:18px 0}
+  }
+
+  /* ---------- nosotros ---------- */
+  .founders{
+    display:grid;grid-template-columns:1fr 1fr;gap:28px;
+    margin-top:34px;
+  }
+  .founder{
+    border-top:2px solid var(--blueprint);
+    padding-top:16px;
+  }
+  .founder h3{font-size:17px;font-weight:600;margin-bottom:6px}
+  .founder .role{
+    font-family:var(--mono);
+    font-size:12px;
+    letter-spacing:.08em;
+    text-transform:uppercase;
+    color:var(--blueprint);
+    display:block;
+    margin-bottom:10px;
+  }
+  .founder p{font-size:15.5px;color:var(--muted)}
+  @media (max-width:680px){.founders{grid-template-columns:1fr}}
+
+  /* ---------- referidos ---------- */
+  .refer-box{
+    border:1px solid var(--blueprint);
+    border-radius:4px;
+    padding:30px 32px;
+    max-width:560px;
+    background:#fff;
+  }
+  .refer-box p{margin-bottom:16px}
+  .refer-box p:last-of-type{margin-bottom:0}
+  .refer-amount{
+    font-family:var(--mono);
+    color:var(--blueprint);
+    font-weight:500;
+  }
+  @media (max-width:680px){.refer-box{padding:22px 20px}}
+
+  /* ---------- contacto ---------- */
+  .contact-links{
+    display:flex;gap:14px;flex-wrap:wrap;margin-top:30px;
+  }
+  .contact-note{
+    margin-top:22px;
+    font-family:var(--mono);
+    font-size:13px;
+    color:var(--muted);
+  }
+
+  /* ---------- footer ---------- */
+  footer{
+    border-top:1px solid var(--hairline);
+    margin-top:0;
+  }
+  .foot{
+    max-width:calc(var(--maxw) + var(--spine));
+    margin:0 auto;
+    padding:34px 24px 46px;
+    font-size:13.5px;
+    color:var(--muted);
+    display:flex;flex-direction:column;gap:6px;
+  }
+  .foot .heritage{font-family:var(--mono);font-size:12px;letter-spacing:.03em}
+
+  /* ---------- reveal ---------- */
+  .reveal{opacity:0;transform:translateY(14px);transition:opacity .5s ease,transform .5s ease}
+  .reveal.in{opacity:1;transform:none}
+  @media (prefers-reduced-motion: reduce){.reveal{opacity:1;transform:none}}
+</style>
+</head>
+<body>
+
+<header>
+  <nav class="nav" aria-label="Principal">
+    <a class="wordmark" href="#top">RomVal <small>Studio</small></a>
+    <div class="nav-links">
+      <a href="#que-hacemos"><span lang="es">Qué hacemos</span><span lang="en">What we do</span></a>
+      <a href="#caso"><span lang="es">Caso</span><span lang="en">Case</span></a>
+      <a href="#nosotros"><span lang="es">Nosotros</span><span lang="en">About</span></a>
+      <a href="#referidos"><span lang="es">Referidos</span><span lang="en">Refer</span></a>
+      <a href="#contacto"><span lang="es">Contacto</span><span lang="en">Contact</span></a>
+      <div class="lang-toggle" role="group" aria-label="Idioma / Language">
+        <button type="button" id="btn-es" aria-pressed="true" onclick="setLang('es')">ES</button>
+        <button type="button" id="btn-en" aria-pressed="false" onclick="setLang('en')">EN</button>
+      </div>
+    </div>
+  </nav>
+</header>
+
+<main id="top">
+
+  <!-- A1 · HERO -->
+  <section class="sec hero" aria-labelledby="hero-h">
+    <div class="cellref" aria-hidden="true">A1</div>
+    <div class="sec-body">
+      <h1 id="hero-h">
+        <span lang="es">Convertimos la hoja de cálculo que nadie se atreve a tocar en software confiable.</span>
+        <span lang="en">We turn the spreadsheet no one dares to touch into software you can rely on.</span>
+      </h1>
+      <p class="sub">
+        <span lang="es">RomVal es un estudio de software de dos hermanos. Tomamos el proceso crítico que hoy vive en un archivo frágil, que solo una persona entiende, y lo reconstruimos como una aplicación que todo el equipo puede usar.</span>
+        <span lang="en">RomVal is a two-brother software studio. We take the critical process that lives in a fragile file only one person understands, and rebuild it as an application the whole team can use.</span>
+      </p>
+      <a class="btn" href="#contacto"><span lang="es">Escríbenos</span><span lang="en">Get in touch</span></a>
+      <a class="btn btn-quiet" href="#caso"><span lang="es">Ver el caso</span><span lang="en">See the case</span></a>
+    </div>
+  </section>
+
+  <!-- A2 · QUÉ HACEMOS -->
+  <section class="sec reveal" id="que-hacemos" aria-labelledby="qh-h">
+    <div class="cellref" aria-hidden="true">A2</div>
+    <div class="sec-body">
+      <h2 id="qh-h">
+        <span lang="es">Del archivo frágil al sistema confiable</span>
+        <span lang="en">From fragile file to reliable system</span>
+      </h2>
+      <div class="points">
+        <div class="point">
+          <h3><span lang="es">Reemplazamos la hoja que depende de una persona</span><span lang="en">We replace the one-person spreadsheet</span></h3>
+          <p>
+            <span lang="es">El proceso deja de vivir en un archivo. Lo convertimos en una aplicación con base de datos real, accesos por usuario y respaldo, para que nada dependa de la memoria de alguien.</span>
+            <span lang="en">The process stops living in a file. We turn it into an application with a real database, per-user access and backups, so nothing depends on one person's memory.</span>
+          </p>
+        </div>
+        <div class="point">
+          <h3><span lang="es">Conservamos la lógica exacta</span><span lang="en">We keep the logic exact</span></h3>
+          <p>
+            <span lang="es">No reinventamos tu negocio. Extraemos las reglas tal como funcionan hoy y las validamos contra tu historial real antes de lanzar. Si el resultado no coincide, no sale.</span>
+            <span lang="en">We don't reinvent your business. We extract the rules exactly as they work today and validate them against your real history before launch. If the results don't match, it doesn't ship.</span>
+          </p>
+        </div>
+        <div class="point">
+          <h3><span lang="es">Entregamos algo que todo el equipo usa</span><span lang="en">We ship something the whole team uses</span></h3>
+          <p>
+            <span lang="es">Interfaz simple, permisos por rol y datos siempre disponibles. El conocimiento del proceso queda en el sistema, no en una sola cabeza.</span>
+            <span lang="en">A simple interface, role-based permissions, data always available. The knowledge of the process lives in the system, not in a single head.</span>
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- B1 · CASO -->
+  <section class="sec reveal" id="caso" aria-labelledby="caso-h">
+    <div class="cellref" aria-hidden="true">B1</div>
+    <div class="sec-body">
+      <h2 id="caso-h">
+        <span lang="es">De un Excel de 20 años a una aplicación en producción</span>
+        <span lang="en">From a 20-year-old Excel to an application in production</span>
+      </h2>
+      <dl class="ledger">
+        <div class="row">
+          <dt><span lang="es">Problema</span><span lang="en">Problem</span></dt>
+          <dd>
+            <span lang="es">Una competencia familiar de larga data se administró durante dos décadas en un solo Excel. Una sola persona podía mantenerlo, la lógica no estaba documentada y el archivo empezó a romperse a medida que el grupo crecía.</span>
+            <span lang="en">A long-running family competition was managed for two decades in a single Excel file. Only one person could maintain it, the logic was undocumented, and the file started breaking as the group grew.</span>
+          </dd>
+        </div>
+        <div class="row">
+          <dt><span lang="es">Qué hicimos</span><span lang="en">What we did</span></dt>
+          <dd>
+            <span lang="es">Hicimos ingeniería inversa de la lógica de puntuación y la validamos contra veinte años de datos históricos: <span class="stat">30 de 30</span> casos reales con coincidencia exacta. Después la reconstruimos como una aplicación web con autenticación y base de datos.</span>
+            <span lang="en">We reverse-engineered the scoring logic and validated it against twenty years of historical data: an exact match in <span class="stat">30 of 30</span> real cases. Then we rebuilt it as a web application with proper authentication and a real database.</span>
+          </dd>
+        </div>
+        <div class="row">
+          <dt><span lang="es">Lo difícil</span><span lang="en">The hard part</span></dt>
+          <dd>
+            <span lang="es">La aplicación soportó carga real en producción, con todo el grupo usándola al mismo tiempo, sin perder un solo dato.</span>
+            <span lang="en">The application survived real production load, with the whole group using it at once, without losing a single record.</span>
+          </dd>
+        </div>
+        <div class="row">
+          <dt><span lang="es">Resultado</span><span lang="en">Result</span></dt>
+          <dd>
+            <span lang="es">El grupo completo migró fuera de la hoja de cálculo. El proceso ya no depende de una persona: vive en un sistema que cualquiera puede usar y que se puede mantener.</span>
+            <span lang="en">The entire group migrated off the spreadsheet. The process no longer depends on one person: it lives in a system anyone can use and that can be maintained.</span>
+          </dd>
+        </div>
+      </dl>
+    </div>
+  </section>
+
+  <!-- C1 · NOSOTROS -->
+  <section class="sec reveal" id="nosotros" aria-labelledby="nos-h">
+    <div class="cellref" aria-hidden="true">C1</div>
+    <div class="sec-body">
+      <h2 id="nos-h">
+        <span lang="es">Dos hermanos, segunda generación</span>
+        <span lang="en">Two brothers, second generation</span>
+      </h2>
+      <p class="muted">
+        <span lang="es">RomVal nace de Ingeniería RomVal, la empresa de ingeniería que fundaron nuestros padres, con los apellidos Romero y Valarino en el nombre. Hoy la segunda generación la relanza como estudio de software: la misma seriedad de ingeniería, aplicada a los procesos que las empresas necesitan que funcionen todos los días. Trabajamos desde Buenos Aires para toda América Latina, en español y en inglés.</span>
+        <span lang="en">RomVal grows out of Ingeniería RomVal, the engineering company our parents founded, carrying the family names Romero and Valarino. Today the second generation relaunches it as a software studio: the same engineering seriousness, applied to the processes businesses need working every single day. We work from Buenos Aires across Latin America, in Spanish and English.</span>
+      </p>
+      <div class="founders">
+        <div class="founder">
+          <h3>Carlos</h3>
+          <span class="role"><span lang="es">Ingeniería</span><span lang="en">Engineering</span></span>
+          <p>
+            <span lang="es">Construye el software. Responsable de la arquitectura, el desarrollo y de que el sistema aguante el uso real.</span>
+            <span lang="en">Builds the software. Responsible for architecture, development, and making sure the system holds up under real use.</span>
+          </p>
+        </div>
+        <div class="founder">
+          <h3>Juani</h3>
+          <span class="role"><span lang="es">Análisis de negocio</span><span lang="en">Business analysis</span></span>
+          <p>
+            <span lang="es">Traduce el proceso al sistema. Formación en economía y finanzas, con experiencia previa en PwC.</span>
+            <span lang="en">Translates the process into the system. Background in economics and finance, previously at PwC.</span>
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- D1 · REFERIDOS -->
+  <section class="sec reveal" id="referidos" aria-labelledby="ref-h">
+    <div class="cellref" aria-hidden="true">D1</div>
+    <div class="sec-body">
+      <h2 id="ref-h">
+        <span lang="es">¿Conoces a alguien con una hoja así?</span>
+        <span lang="en">Know someone with a spreadsheet like this?</span>
+      </h2>
+      <div class="refer-box">
+        <p>
+          <span lang="es">Recomienda a una empresa. Si construye con RomVal un proyecto de más de <span class="refer-amount">USD 500</span>, te enviamos una gift card de Amazon de <span class="refer-amount">USD 50</span>.</span>
+          <span lang="en">Refer a company. If they build with RomVal on a project above <span class="refer-amount">USD 500</span>, we send you a <span class="refer-amount">USD 50</span> Amazon gift card.</span>
+        </p>
+        <p class="muted">
+          <span lang="es">Sin condiciones escondidas. Nos escribes con el contacto, nosotros hacemos el resto.</span>
+          <span lang="en">No hidden conditions. Send us the contact, we handle the rest.</span>
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- E1 · CONTACTO -->
+  <section class="sec reveal" id="contacto" aria-labelledby="con-h">
+    <div class="cellref" aria-hidden="true">E1</div>
+    <div class="sec-body">
+      <h2 id="con-h">
+        <span lang="es">Cuéntanos qué proceso te preocupa</span>
+        <span lang="en">Tell us which process worries you</span>
+      </h2>
+      <p class="muted">
+        <span lang="es">Una conversación corta alcanza para saber si podemos ayudar. Sin compromiso.</span>
+        <span lang="en">A short conversation is enough to know if we can help. No commitment.</span>
+      </p>
+      <div class="contact-links">
+        <a class="btn" href="mailto:juaniromerov@gmail.com">
+          <span lang="es">Escribir por email</span><span lang="en">Email us</span>
+        </a>
+        <a class="btn btn-quiet" style="margin-left:0" href="https://wa.me/541139031491" target="_blank" rel="noopener">
+          WhatsApp
+        </a>
+      </div>
+      <p class="contact-note">juaniromerov@gmail.com · +54 11 3903 1491</p>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="foot">
+    <div>© RomVal Studio <span id="year">2026</span> · Buenos Aires</div>
+    <div class="heritage">
+      <span lang="es">Segunda generación de Ingeniería RomVal, fundada por la familia Romero y Valarino.</span>
+      <span lang="en">Second generation of Ingeniería RomVal, founded by the Romero and Valarino family.</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+  function setLang(l){
+    document.documentElement.setAttribute('data-lang', l);
+    document.documentElement.setAttribute('lang', l);
+    document.getElementById('btn-es').setAttribute('aria-pressed', String(l==='es'));
+    document.getElementById('btn-en').setAttribute('aria-pressed', String(l==='en'));
+  }
+
+  document.getElementById('year').textContent = new Date().getFullYear();
+
+  if(!window.matchMedia('(prefers-reduced-motion: reduce)').matches && 'IntersectionObserver' in window){
+    var obs = new IntersectionObserver(function(entries){
+      entries.forEach(function(e){
+        if(e.isIntersecting){ e.target.classList.add('in'); obs.unobserve(e.target); }
+      });
+    }, {threshold:.12});
+    document.querySelectorAll('.reveal').forEach(function(el){ obs.observe(el); });
+  } else {
+    document.querySelectorAll('.reveal').forEach(function(el){ el.classList.add('in'); });
+  }
+</script>
+
+</body>
+</html>
