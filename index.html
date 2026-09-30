@@ -303,6 +303,48 @@
   .contact-links{
     display:flex;gap:14px;flex-wrap:wrap;margin-top:30px;
   }
+  .form{
+    margin-top:30px;
+    max-width:560px;
+    display:grid;gap:18px;
+  }
+  .form .pair{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+  @media (max-width:680px){.form .pair{grid-template-columns:1fr}}
+  .field label{
+    display:block;
+    font-family:var(--mono);
+    font-size:12px;
+    font-weight:500;
+    letter-spacing:.08em;
+    text-transform:uppercase;
+    color:var(--blueprint);
+    margin-bottom:6px;
+  }
+  .field label .opt{color:var(--muted);text-transform:none;letter-spacing:0}
+  .field input,.field textarea{
+    width:100%;
+    font:inherit;
+    font-size:16px;
+    color:var(--ink);
+    background:#fff;
+    border:1px solid var(--hairline);
+    border-radius:3px;
+    padding:11px 13px;
+  }
+  .field textarea{min-height:140px;resize:vertical}
+  .field input:focus,.field textarea:focus{
+    outline:2px solid var(--amber);
+    outline-offset:1px;
+    border-color:var(--blueprint);
+  }
+  .hp{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
+  .form .btn{cursor:pointer;justify-self:start}
+  .form .btn[disabled]{opacity:.6;cursor:wait;transform:none;box-shadow:none}
+  .form-status{font-size:15px;min-height:1.5em}
+  .form-status.ok{color:var(--blueprint)}
+  .form-status.err{color:#9B2C2C}
+  .contact-alt{margin-top:34px;font-size:15px;color:var(--muted)}
+  .contact-links{margin-top:14px}
   .contact-note{
     margin-top:22px;
     font-family:var(--mono);
@@ -510,6 +552,36 @@
         <span lang="es">Una conversación corta alcanza para saber si podemos ayudar. Sin compromiso.</span>
         <span lang="en">A short conversation is enough to know if we can help. No commitment.</span>
       </p>
+      <form class="form" id="contact-form" novalidate>
+        <div class="pair">
+          <div class="field">
+            <label for="f-name"><span lang="es">Nombre</span><span lang="en">Name</span></label>
+            <input id="f-name" name="name" type="text" autocomplete="name" maxlength="200" required>
+          </div>
+          <div class="field">
+            <label for="f-email">Email</label>
+            <input id="f-email" name="email" type="email" autocomplete="email" maxlength="200" required>
+          </div>
+        </div>
+        <div class="field">
+          <label for="f-company"><span lang="es">Empresa</span><span lang="en">Company</span> <span class="opt">(<span lang="es">opcional</span><span lang="en">optional</span>)</span></label>
+          <input id="f-company" name="company" type="text" autocomplete="organization" maxlength="200">
+        </div>
+        <div class="field">
+          <label for="f-message"><span lang="es">¿Qué proceso te preocupa?</span><span lang="en">Which process worries you?</span></label>
+          <textarea id="f-message" name="message" maxlength="5000" required></textarea>
+        </div>
+        <div class="hp" aria-hidden="true">
+          <label for="f-website">Website</label>
+          <input id="f-website" name="website" type="text" tabindex="-1" autocomplete="off">
+        </div>
+        <button class="btn" type="submit"><span lang="es">Enviar consulta</span><span lang="en">Send inquiry</span></button>
+        <p class="form-status" id="form-status" role="status" aria-live="polite"></p>
+      </form>
+      <p class="contact-alt">
+        <span lang="es">¿Prefieres escribirnos directo?</span>
+        <span lang="en">Prefer to reach us directly?</span>
+      </p>
       <div class="contact-links">
         <a class="btn" href="mailto:juaniromerov@gmail.com">
           <span lang="es">Escribir por email</span><span lang="en">Email us</span>
@@ -543,6 +615,45 @@
   }
 
   document.getElementById('year').textContent = new Date().getFullYear();
+
+  // Google Apps Script web app URL (see backend/Code.gs)
+  var FORM_ENDPOINT = '';
+
+  var MSG = {
+    es:{sending:'Enviando…', ok:'¡Gracias! Recibimos tu consulta y te respondemos pronto.', missing:'Completa nombre, email y mensaje.', email:'Revisa el email, parece incorrecto.', err:'No se pudo enviar. Escríbenos a juaniromerov@gmail.com o por WhatsApp.'},
+    en:{sending:'Sending…', ok:'Thanks! We got your inquiry and will reply soon.', missing:'Please fill in name, email and message.', email:'That email doesn’t look right.', err:'Couldn’t send. Email us at juaniromerov@gmail.com or use WhatsApp.'}
+  };
+
+  document.getElementById('contact-form').addEventListener('submit', function(ev){
+    ev.preventDefault();
+    var form = ev.target;
+    var status = document.getElementById('form-status');
+    var btn = form.querySelector('button[type="submit"]');
+    var t = MSG[document.documentElement.getAttribute('data-lang')] || MSG.es;
+    function show(text, cls){ status.textContent = text; status.className = 'form-status ' + (cls || ''); }
+
+    var data = new FormData(form);
+    var name = (data.get('name') || '').trim();
+    var email = (data.get('email') || '').trim();
+    var message = (data.get('message') || '').trim();
+    if(!name || !email || !message){ show(t.missing, 'err'); return; }
+    if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){ show(t.email, 'err'); return; }
+    if(!FORM_ENDPOINT){ show(t.err, 'err'); return; }
+
+    data.append('lang', document.documentElement.getAttribute('data-lang'));
+    data.append('page', location.href);
+    btn.disabled = true;
+    show(t.sending);
+    fetch(FORM_ENDPOINT, {method:'POST', body:new URLSearchParams(data)})
+      .then(function(r){ return r.json(); })
+      .then(function(res){
+        if(!res.ok) throw new Error(res.error || 'failed');
+        form.reset();
+        show(t.ok, 'ok');
+      })
+      .catch(function(){ show(t.err, 'err'); })
+      .then(function(){ btn.disabled = false; });
+  });
 
   if(!window.matchMedia('(prefers-reduced-motion: reduce)').matches && 'IntersectionObserver' in window){
     var obs = new IntersectionObserver(function(entries){
